@@ -17,12 +17,12 @@
  * ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.
  **/
 
-#ifndef NDN_VERIFYING_CONSUMER_H
-#define NDN_VERIFYING_CONSUMER_H
+#ifndef NDN_CONSUMER_H
+#define NDN_CONSUMER_H
 
 #include "ns3/ndnSIM/model/ndn-common.hpp"
 
-#include "ndn-app.hpp"
+#include "ndn-consumer.hpp"
 
 #include "ns3/random-variable-stream.h"
 #include "ns3/nstime.h"
@@ -31,6 +31,8 @@
 #include "ns3/ndnSIM/model/ndn-common.hpp"
 #include "ns3/ndnSIM/utils/ndn-rtt-estimator.hpp"
 #include "ns3/ndnSIM/utils/ndn-fw-hop-count-tag.hpp"
+
+#include <ns3/ndnSIM/ndn-cxx/security/validator-config.hpp>
 
 #include <set>
 #include <map>
@@ -47,7 +49,7 @@ namespace ndn {
  * @ingroup ndn-apps
  * \brief NDN application for sending out Interest packets
  */
-class Consumer : public App {
+class VerifyingConsumer : public Consumer {
 public:
   static TypeId
   GetTypeId();
@@ -56,10 +58,10 @@ public:
    * \brief Default constructor
    * Sets up randomizer function and packet sequence number
    */
-  Consumer();
-  virtual ~Consumer(){};
+  VerifyingConsumer();
+  virtual ~VerifyingConsumer(){};
 
-  // From App
+  // From Consumer
   virtual void
   OnData(shared_ptr<const Data> contentObject);
 
@@ -75,6 +77,10 @@ public:
    */
   virtual void
   SendPacket();
+
+  void OnDataValidationFailed(const shared_ptr<const Data>& data, const std::string& failureInfo);
+
+  void ValidationPassed(const ndn::shared_ptr<const ndn::Data>& data);
 
   /**
    * @brief An event that is fired just before an Interest packet is actually send out (send is
@@ -106,30 +112,36 @@ protected:
    * protocol
    */
   virtual void
-  ScheduleNextPacket() = 0;
+  ScheduleNextPacket();
 
   /**
    * \brief Checks if the packet need to be retransmitted becuase of retransmission timer expiration
    */
-  virtual void
+  void
   CheckRetxTimeout();
 
   /**
    * \brief Modifies the frequency of checking the retransmission timeouts
    * \param retxTimer Timeout defining how frequent retransmission timeouts should be checked
    */
-  virtual void
+  void
   SetRetxTimer(Time retxTimer);
 
   /**
    * \brief Returns the frequency of checking the retransmission timeouts
    * \return Timeout defining how frequent retransmission timeouts should be checked
    */
-  virtual Time
+  Time
   GetRetxTimer() const;
 
 protected:
+  // Validator fields
   Ptr<UniformRandomVariable> m_rand; ///< @brief nonce generator
+
+  double m_frequency; // Frequency of interest packets (in hertz)
+  bool m_firstTime;
+  Ptr<RandomVariableStream> m_random;
+  std::string m_randomType;
 
   uint32_t m_seq;      ///< @brief currently requested sequence number
   uint32_t m_seqMax;   ///< @brief maximum number of sequence number
@@ -142,6 +154,8 @@ protected:
   Time m_offTime;          ///< \brief Time interval between packets
   Name m_interestName;     ///< \brief NDN Name of the Interest (use Name)
   Time m_interestLifeTime; ///< \brief LifeTime for interest packet
+
+  shared_ptr<::ndn::ValidatorConfig> m_validator;
 
   /// @cond include_hidden
   /**
@@ -212,4 +226,4 @@ protected:
 } // namespace ndn
 } // namespace ns3
 
-#endif // NDN_VERIFYING_CONSUMER_H
+#endif

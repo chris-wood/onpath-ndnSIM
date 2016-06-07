@@ -122,7 +122,8 @@ Producer::OnInterest(shared_ptr<const Interest> interest)
   signature.setInfo(signatureInfo);
   signature.setValue(::ndn::nonNegativeIntegerBlock(::ndn::tlv::SignatureValue, m_signature));
 
-  data->setSignature(signature);
+  m_keyChain.signByIdentity(*data, m_prefix);
+  // data->setSignature(signature);
 
   NS_LOG_INFO("node(" << GetNode()->GetId() << ") responding with Data: " << data->getName());
 

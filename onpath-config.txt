@@ -1,0 +1,15 @@
+rule
+{
+  id "Simple Verification Rule"
+  for data
+  checker
+  {
+    type hierarchical
+    sig-type rsa-sha256
+  }
+}
+trust-anchor
+{
+  type file
+  file-name "onpath-cert.crt"
+}

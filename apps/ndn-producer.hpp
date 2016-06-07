@@ -25,6 +25,9 @@
 #include "ndn-app.hpp"
 #include "ns3/ndnSIM/model/ndn-common.hpp"
 
+#include <ndn-cxx/security/key-chain.hpp>
+#include <ndn-cxx/security/validator.hpp>
+
 #include "ns3/nstime.h"
 #include "ns3/ptr.h"
 
@@ -67,6 +70,7 @@ private:
 
   uint32_t m_signature;
   Name m_keyLocator;
+  KeyChain m_keyChain;
 };
 
 } // namespace ndn
